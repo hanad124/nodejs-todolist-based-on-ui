@@ -65,7 +65,13 @@ const TodoList = () => {
     }
   };
   const handleAddTodo = (todo: string) => {
+    // Check if todo is empty
+    if (todo.trim() === "") {
+      return;
+    }
+
     setTodos((prevTodos) => [...prevTodos, todo]);
+
     // Store updated todos in session storage
     window.sessionStorage.setItem("todos", JSON.stringify([...todos, todo]));
   };
@@ -114,7 +120,9 @@ const TodoList = () => {
             placeholder="Create a new todo..."
             className="w-full h-full bg-transparent outline-none px-3 text-[#25273c] dark:text-[#fff] caret-violet-400"
             onKeyPress={(e) => {
+              // check if the input is empty
               if (e.key === "Enter") {
+                if (e.currentTarget.value.trim() === "") return;
                 handleAddTodo(e.currentTarget.value);
                 e.currentTarget.value = "";
               }
