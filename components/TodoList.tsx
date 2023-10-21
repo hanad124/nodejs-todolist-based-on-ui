@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Cross2Icon, CheckIcon, Pencil1Icon } from "@radix-ui/react-icons";
 import {
   Dialog,
@@ -16,25 +16,68 @@ const TodoList = () => {
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [editedTodo, setEditedTodo] = useState<string>("");
 
+  useEffect(() => {
+    // Read todos from session storage on component mount
+    const storedTodos = window.sessionStorage.getItem("todos");
+    // Read marked todos from session storage on component mount
+    const storedMarkedTodos = window.sessionStorage.getItem("markedTodos");
+    if (storedTodos) {
+      setTodos(JSON.parse(storedTodos));
+    }
+    if (storedMarkedTodos) {
+      setMarkedTodos(JSON.parse(storedMarkedTodos));
+    }
+  }, []);
+
   const handleMarkTodo = (index: number) => {
     if (markedTodos.includes(index)) {
       // If the todo is already marked, remove it from the array
       setMarkedTodos((prevMarkedTodos) =>
         prevMarkedTodos.filter((todoIndex) => todoIndex !== index)
       );
+      // Remove marked todos from session storage
+      const storedMarkedTodos = sessionStorage.getItem("markedTodos");
+      if (storedMarkedTodos) {
+        const parsedMarkedTodos = JSON.parse(storedMarkedTodos);
+        const updatedMarkedTodos = parsedMarkedTodos.filter(
+          (todoIndex: number) => todoIndex !== index
+        );
+        sessionStorage.setItem(
+          "markedTodos",
+          JSON.stringify(updatedMarkedTodos)
+        );
+      }
     } else {
+      // Add marked todos to session storage
+      const storedMarkedTodos = sessionStorage.getItem("markedTodos");
+      if (storedMarkedTodos) {
+        const parsedMarkedTodos = JSON.parse(storedMarkedTodos);
+        const updatedMarkedTodos = [...parsedMarkedTodos, index];
+        sessionStorage.setItem(
+          "markedTodos",
+          JSON.stringify(updatedMarkedTodos)
+        );
+      } else {
+        sessionStorage.setItem("markedTodos", JSON.stringify([index]));
+      }
       // If the todo is not marked, add it to the array
       setMarkedTodos((prevMarkedTodos) => [...prevMarkedTodos, index]);
     }
   };
   const handleAddTodo = (todo: string) => {
-    // setIsMarked(false);
     setTodos((prevTodos) => [...prevTodos, todo]);
+    // Store updated todos in session storage
+    window.sessionStorage.setItem("todos", JSON.stringify([...todos, todo]));
   };
 
   const handleDeleteTodo = (index: number) => {
     setTodos((prevTodos) =>
       prevTodos.filter((todo, todoIndex) => todoIndex !== index)
+    );
+    // Store updated todos in session storage
+    window.sessionStorage.setItem(
+      "todos",
+      JSON.stringify(todos.filter((todo, todoIndex) => todoIndex !== index))
     );
   };
 
@@ -48,8 +91,10 @@ const TodoList = () => {
       setTodos((prevTodos) => {
         const updatedTodos = [...prevTodos];
         updatedTodos[editIndex!] = editedTodo;
+        window.sessionStorage.setItem("todos", JSON.stringify(updatedTodos));
         return updatedTodos;
       });
+      //   Store updated todos in session storage
       handleCloseDialog();
     }
   };
@@ -80,7 +125,8 @@ const TodoList = () => {
       {/*  todos  */}
 
       <div className="mt-5">
-        {todos.map((todo, index) => (
+        {/* get todos from sestion storage */}
+        {todos?.map((todo, index) => (
           <div className="" key={index}>
             {" "}
             <div
