@@ -81,7 +81,7 @@ const TodoList = () => {
 
       <div className="mt-5">
         {todos.map((todo, index) => (
-          <div className="">
+          <div className="" key={index}>
             {" "}
             <div
               className={`group cursor-pointer flex items-center justify-between bg-[#fff] dark:bg-[#25273c] p-5  h-14 border-b ${
